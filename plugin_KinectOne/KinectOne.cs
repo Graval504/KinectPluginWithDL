@@ -14,10 +14,10 @@ using Amethyst.Plugins.Contract;
 namespace plugin_KinectOne;
 
 [Export(typeof(ITrackingDevice))]
-[ExportMetadata("Name", "Xbox One Kinect")]
-[ExportMetadata("Guid", "K2VRTEAM-AME2-APII-DVCE-DVCEKINECTV2")]
-[ExportMetadata("Publisher", "K2VR Team")]
-[ExportMetadata("Version", "1.0.0.1")]
+[ExportMetadata("Name", "Xbox One Kinect With DL")]
+[ExportMetadata("Guid", "K2VRTEAM-AME2-APII-DVCE-DVCEKINECTV3")]
+[ExportMetadata("Publisher", "Graval504")]
+[ExportMetadata("Version", "0.0.0.0")]
 [ExportMetadata("Website", "https://github.com/KimihikoAkayasaki/plugin_KinectOne")]
 [ExportMetadata("DependencyLink", "https://docs.k2vr.tech/{0}/one/setup/")]
 [ExportMetadata("DependencySource",
