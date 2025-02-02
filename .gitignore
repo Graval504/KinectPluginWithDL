@@ -347,3 +347,10 @@ healthchecksdb
 
 # Backup folder for Package Reference Convert tool in Visual Studio 2017
 MigrationBackup/
+/PoseDetection/body3d_img2pose_demo.py
+/Testing/Testing.vcxproj
+/Testing/Testing.vcxproj.filters
+
+# Test Folder
+/Testing/*
+/PoseDetection/*

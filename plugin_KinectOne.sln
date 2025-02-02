@@ -7,20 +7,60 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "plugin_KinectOne", "plugin_
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KinectHandler", "KinectHandler\KinectHandler.vcxproj", "{A2F2D832-190E-4933-8D11-B27459BA2D8C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Testing", "Testing\Testing.vcxproj", "{F77A9631-D810-47AF-AC7E-E4C18A042EF8}"
+EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "PoseDetection", "PoseDetection\PoseDetection.pyproj", "{8903F9DB-52BE-47B7-B395-7F06EBF3DC3F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
 		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8DED8B5D-9BE5-48FE-88F0-2DAAFE28EBAD}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{8DED8B5D-9BE5-48FE-88F0-2DAAFE28EBAD}.Debug|Any CPU.Build.0 = Debug|x64
 		{8DED8B5D-9BE5-48FE-88F0-2DAAFE28EBAD}.Debug|x64.ActiveCfg = Debug|x64
 		{8DED8B5D-9BE5-48FE-88F0-2DAAFE28EBAD}.Debug|x64.Build.0 = Debug|x64
+		{8DED8B5D-9BE5-48FE-88F0-2DAAFE28EBAD}.Debug|x86.ActiveCfg = Debug|x64
+		{8DED8B5D-9BE5-48FE-88F0-2DAAFE28EBAD}.Debug|x86.Build.0 = Debug|x64
+		{8DED8B5D-9BE5-48FE-88F0-2DAAFE28EBAD}.Release|Any CPU.ActiveCfg = Release|x64
+		{8DED8B5D-9BE5-48FE-88F0-2DAAFE28EBAD}.Release|Any CPU.Build.0 = Release|x64
 		{8DED8B5D-9BE5-48FE-88F0-2DAAFE28EBAD}.Release|x64.ActiveCfg = Release|x64
 		{8DED8B5D-9BE5-48FE-88F0-2DAAFE28EBAD}.Release|x64.Build.0 = Release|x64
+		{8DED8B5D-9BE5-48FE-88F0-2DAAFE28EBAD}.Release|x86.ActiveCfg = Release|x64
+		{8DED8B5D-9BE5-48FE-88F0-2DAAFE28EBAD}.Release|x86.Build.0 = Release|x64
+		{A2F2D832-190E-4933-8D11-B27459BA2D8C}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{A2F2D832-190E-4933-8D11-B27459BA2D8C}.Debug|Any CPU.Build.0 = Debug|x64
 		{A2F2D832-190E-4933-8D11-B27459BA2D8C}.Debug|x64.ActiveCfg = Debug|x64
 		{A2F2D832-190E-4933-8D11-B27459BA2D8C}.Debug|x64.Build.0 = Debug|x64
+		{A2F2D832-190E-4933-8D11-B27459BA2D8C}.Debug|x86.ActiveCfg = Debug|x64
+		{A2F2D832-190E-4933-8D11-B27459BA2D8C}.Debug|x86.Build.0 = Debug|x64
+		{A2F2D832-190E-4933-8D11-B27459BA2D8C}.Release|Any CPU.ActiveCfg = Release|x64
+		{A2F2D832-190E-4933-8D11-B27459BA2D8C}.Release|Any CPU.Build.0 = Release|x64
 		{A2F2D832-190E-4933-8D11-B27459BA2D8C}.Release|x64.ActiveCfg = Release|x64
 		{A2F2D832-190E-4933-8D11-B27459BA2D8C}.Release|x64.Build.0 = Release|x64
+		{A2F2D832-190E-4933-8D11-B27459BA2D8C}.Release|x86.ActiveCfg = Release|x64
+		{A2F2D832-190E-4933-8D11-B27459BA2D8C}.Release|x86.Build.0 = Release|x64
+		{F77A9631-D810-47AF-AC7E-E4C18A042EF8}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{F77A9631-D810-47AF-AC7E-E4C18A042EF8}.Debug|Any CPU.Build.0 = Debug|x64
+		{F77A9631-D810-47AF-AC7E-E4C18A042EF8}.Debug|x64.ActiveCfg = Debug|x64
+		{F77A9631-D810-47AF-AC7E-E4C18A042EF8}.Debug|x86.ActiveCfg = Debug|Win32
+		{F77A9631-D810-47AF-AC7E-E4C18A042EF8}.Debug|x86.Build.0 = Debug|Win32
+		{F77A9631-D810-47AF-AC7E-E4C18A042EF8}.Release|Any CPU.ActiveCfg = Release|x64
+		{F77A9631-D810-47AF-AC7E-E4C18A042EF8}.Release|Any CPU.Build.0 = Release|x64
+		{F77A9631-D810-47AF-AC7E-E4C18A042EF8}.Release|x64.ActiveCfg = Release|x64
+		{F77A9631-D810-47AF-AC7E-E4C18A042EF8}.Release|x86.ActiveCfg = Release|Win32
+		{F77A9631-D810-47AF-AC7E-E4C18A042EF8}.Release|x86.Build.0 = Release|Win32
+		{8903F9DB-52BE-47B7-B395-7F06EBF3DC3F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8903F9DB-52BE-47B7-B395-7F06EBF3DC3F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8903F9DB-52BE-47B7-B395-7F06EBF3DC3F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8903F9DB-52BE-47B7-B395-7F06EBF3DC3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8903F9DB-52BE-47B7-B395-7F06EBF3DC3F}.Release|x64.ActiveCfg = Release|Any CPU
+		{8903F9DB-52BE-47B7-B395-7F06EBF3DC3F}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

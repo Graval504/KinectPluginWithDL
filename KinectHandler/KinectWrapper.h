@@ -3,7 +3,6 @@
 #include <Ole2.h>
 #include <Kinect.h>
 #include <atlbase.h>
-
 #include <algorithm>
 #include <iterator>
 #include <memory>
@@ -11,8 +10,13 @@
 #include <array>
 #include <map>
 #include <functional>
+#include <Python.h>
+#include <fstream>
+#include <filesystem>
+#include <string>
 
 inline void (*status_changed_event)();
+
 
 class KinectWrapper
 {
@@ -30,12 +34,23 @@ class KinectWrapper
 
     WAITABLE_HANDLE h_statusChangedEvent;
     WAITABLE_HANDLE h_bodyFrameEvent;
+    WAITABLE_HANDLE h_colorFrameEvent;
     bool newBodyFrameArrived = false;
+    bool newColorFrameArrived = false;
 
     std::array<JointOrientation, JointType_Count> bone_orientations_;
     std::array<Joint, JointType_Count> skeleton_positions_;
 
     std::unique_ptr<std::thread> updater_thread_;
+
+    PyObject* pyLog;
+    PyObject* pModule;
+    PyObject* builtins;
+    PyObject* cv2;
+
+    PyObject* model;
+
+    std::string logFilePath;
 
     inline static bool initialized_ = false;
     bool skeleton_tracked_ = false;
@@ -83,8 +98,116 @@ class KinectWrapper
         }
     }
 
+    void updateRGBData()
+    {
+        if (!colorFrameReader)return; // Give up already
+        LogMessage("updating RGBData");
+        printPythonError();
+        IColorFrame* colorFrame = nullptr;
+        colorFrameReader->AcquireLatestFrame(&colorFrame);
+
+        if (!colorFrame) return;
+        //BYTE* rawFrame = nullptr;
+        //UINT capa;
+        //colorFrame->AccessRawUnderlyingBuffer(&capa, &rawFrame);
+        std::vector<BYTE> rgbaFrame(8294400); // 1920*1080*4
+        colorFrame->CopyConvertedFrameDataToArray(8294400, rgbaFrame.data(), ColorImageFormat_Bgra);
+        newColorFrameArrived = true;
+        if (colorFrame) colorFrame->Release();
+        PyObject* py_bytes = PyBytes_FromStringAndSize((char*)rgbaFrame.data(), 8294400);
+        //PyObject* py_bytes = PyBytes_FromStringAndSize((char*)rawFrame, capa);
+        LogMessage("cbytes to pybytes");
+        //LogMessage << capa << "\n";
+        LogMessage(PyUnicode_AsUTF8(PyObject_GetAttrString(PyObject_Type(py_bytes), "__name__")));
+        printPythonError();
+        PyObject* image = PyObject_CallMethod(pModule, "bytes2img", "(O)", py_bytes);
+        LogMessage("pybytes to img mat");
+        printPythonError();
+        PyObject* Keypoints = PyObject_CallMethod(pModule, "img2keypoints", "(OO)", image, model);
+        LogMessage("img to keypoints by deep leaning");
+        printPythonError();
+    }
+
+    void printPythonError() {
+        PyObject* ptype, * pvalue, * ptraceback;
+        PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+
+        if (ptype != nullptr) {
+            LogMessage("error occured:");
+            PyObject* pStr = PyObject_Str(pvalue);
+            const char* errorMessage = PyUnicode_AsUTF8(pStr);
+
+            LogMessage(errorMessage);
+
+            Py_DECREF(pStr);
+        }
+    }
+
+    std::string GenerateLogFileName() {
+        std::string baseName = (std::string)"C:\\Users\\user\\Desktop\\" + "log_";
+        std::time_t now = std::time(nullptr);
+        char buffer[20];
+        std::strftime(buffer, sizeof(buffer), "%Y%m%d%H%M%S", std::localtime(&now));
+        std::string timeStamp = std::string(buffer);
+
+        std::string logFileName = baseName + timeStamp + ".log";
+
+        int counter = 1;
+        while (std::filesystem::exists(logFileName)) {
+            logFileName = baseName + timeStamp + "_" + std::to_string(counter++) + ".log";
+        }
+        return logFileName;
+    }
+
+    void LogMessage(std::string message) {
+        std::time_t now = std::time(nullptr);
+        char timeBuffer[20];
+        std::strftime(timeBuffer, sizeof(timeBuffer), "%Y-%m-%d %H:%M:%S", std::localtime(&now));
+
+        std::ofstream logFile(logFilePath, std::ios::app);
+        if (logFile.is_open()) {
+            logFile << "[" << timeBuffer << "] " << message << "\n";
+            logFile.close();
+        }
+    }
     bool initKinect()
     {
+        logFilePath = GenerateLogFileName();
+        LogMessage(std::filesystem::current_path().string());
+        // Get Python Conda environment and Initialize
+        wchar_t* pythonHome = Py_DecodeLocale("C:/Users/Graval504/miniconda3/envs/ml", NULL);
+        Py_SetPythonHome(pythonHome);
+        Py_Initialize();
+        if (!Py_IsInitialized()) LogMessage("python failed to init \n");
+        PyRun_SimpleString("import os");
+        PyRun_SimpleString("import sys");
+        PyRun_SimpleString("sys.path.append('C:/Programming/pose-detection/MHFormer')");
+        PyRun_SimpleString("open('C:/Users/Graval504/Desktop/testpythonlog.log','w').write(os.getcwd())");
+        LogMessage("write pylog");  
+        this->builtins = PyImport_ImportModule("builtins");
+        printPythonError();
+        LogMessage("import builtins");
+        pyLog = PyObject_CallMethod(this->builtins, "open", "(ss)", "C:/Users/Graval504/Desktop/testpythonlog.log", "a");
+        printPythonError();
+        LogMessage("call open");
+        PyObject_CallMethod(pyLog, "write", "(s)", "\nlog on\n");
+        printPythonError();
+        LogMessage("write logon");
+        PyRun_SimpleString("os.environ['CUDA_VISIBLE_DEVICES'] = '0'");
+        printPythonError();
+        LogMessage("cuda set");
+
+        PyObject* sys = PyImport_ImportModule("sys");
+        PyObject* paths = PyObject_GetAttrString(sys, "path");
+        LogMessage(PyUnicode_AsUTF8(PyObject_Str(paths)));
+        PyRun_SimpleString("open('C:/Users/Graval504/Desktop/testpythonlog.log','a').writelines(sys.path)");
+        PyObject* pName = PyUnicode_DecodeFSDefault("vis");
+        this->pModule = PyImport_Import(pName);
+        Py_DECREF(pName);
+        printPythonError();
+        LogMessage("vis import");
+        this->model = PyObject_CallMethod(this->pModule, "setup3dModel", NULL);
+
         // Get a working Kinect Sensor
         if (FAILED(GetDefaultKinectSensor(&kinectSensor))) return false;
         if (kinectSensor)
@@ -116,18 +239,31 @@ class KinectWrapper
 
     void initializeSkeleton()
     {
-        if (bodyFrameReader)
-            bodyFrameReader->Release();
+        //if (bodyFrameReader)
+        //    bodyFrameReader->Release();
 
-        IBodyFrameSource* bodyFrameSource;
-        kinectSensor->get_BodyFrameSource(&bodyFrameSource);
-        bodyFrameSource->OpenReader(&bodyFrameReader);
+        //IBodyFrameSource* bodyFrameSource;
+        //kinectSensor->get_BodyFrameSource(&bodyFrameSource);
+        //bodyFrameSource->OpenReader(&bodyFrameReader);
 
-        // Newfangled event based frame capture
-        // https://github.com/StevenHickson/PCL_Kinect2SDK/blob/master/src/Microsoft_grabber2.cpp
-        h_bodyFrameEvent = (WAITABLE_HANDLE)CreateEvent(nullptr, FALSE, FALSE, nullptr);
-        bodyFrameReader->SubscribeFrameArrived(&h_bodyFrameEvent);
-        if (bodyFrameSource) bodyFrameSource->Release();
+        //// Newfangled event based frame capture
+        //// https://github.com/StevenHickson/PCL_Kinect2SDK/blob/master/src/Microsoft_grabber2.cpp
+        //h_bodyFrameEvent = (WAITABLE_HANDLE)CreateEvent(nullptr, FALSE, FALSE, nullptr);
+        //bodyFrameReader->SubscribeFrameArrived(&h_bodyFrameEvent);
+        //if (bodyFrameSource) bodyFrameSource->Release();
+
+        if (colorFrameReader)
+            colorFrameReader->Release();
+
+        IColorFrameSource* colorFrameSource;
+        kinectSensor->get_ColorFrameSource(&colorFrameSource);
+
+        BOOLEAN isactive = false;
+        colorFrameSource->OpenReader(&colorFrameReader);
+
+        h_colorFrameEvent = (WAITABLE_HANDLE)CreateEvent(nullptr, FALSE, FALSE, nullptr);
+        colorFrameReader->SubscribeFrameArrived(&h_colorFrameEvent);
+        if (colorFrameSource) colorFrameSource->Release();
     }
 
     void terminateSkeleton()
@@ -306,6 +442,23 @@ public:
                             pArgs->Release(); // Release the frame
                         }
                     }
+                if (h_colorFrameEvent)
+                    if (HANDLE Chandles[] = { reinterpret_cast<HANDLE>(h_colorFrameEvent) };
+                        // Wait for a frame to arrive, give up after >3s of nothing
+                        MsgWaitForMultipleObjects(_countof(Chandles), Chandles,
+                            false, 3000, QS_ALLINPUT) == WAIT_OBJECT_0)
+                {
+                    IColorFrameArrivedEventArgs* pCArgs = nullptr;
+                    if (colorFrameReader &&
+                        SUCCEEDED(colorFrameReader->GetFrameArrivedEventData(h_colorFrameEvent, &pCArgs)))
+                    {
+                        [&, this](IColorFrameReader& Csender, IColorFrameArrivedEventArgs& CeventArgs)
+                            {
+                                updateRGBData();
+                            }(*colorFrameReader, *pCArgs);
+                        pCArgs->Release(); // Release the frame
+                    }
+                }
             }
         }
     }
@@ -314,6 +467,9 @@ public:
     {
         try
         {
+            // Shut down Python
+            PyObject_CallMethod(pyLog, "close", NULL);
+            Py_Finalize();
             // Shut down the sensor (Only NUI API)
             if (kinectSensor)
             {
